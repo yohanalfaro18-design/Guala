@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guala · Asistente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+:root{--bg:#080D10;--panel:#102126;--ink:#F2F7F5;--muted:#9BB1B5;--brand:#487F85;--brand2:#F5D58A;--user:#BAF2D7;--line:#244047;--mint:#BAF2D7;--action:#39AFA0;--shadow:rgba(8,13,16,.28)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 Nunito,system-ui,sans-serif;display:flex;justify-content:center}
+.app{width:100%;max-width:600px;height:100%;display:flex;flex-direction:column;background:var(--bg);border-inline:1px solid var(--line);box-shadow:0 12px 50px var(--shadow)}
+header{padding:16px 20px;display:flex;align-items:center;gap:12px;background:var(--mint);color:var(--bg);box-shadow:0 4px 18px var(--shadow);z-index:1}
+.logo{width:44px;height:44px;border-radius:16px;background:var(--brand);color:var(--mint);display:grid;place-items:center;font:800 22px Fraunces,serif;box-shadow:0 3px 10px var(--shadow)}
+header>div:nth-child(2){min-width:0}
+header h1{margin:0;font:800 22px Fraunces,serif;letter-spacing:.5px}
+header small{opacity:.85}
+.header-actions{margin-left:auto;display:flex;align-items:center;gap:7px;flex-shrink:0}
+.cart,.reset-chat{background:rgba(8,13,16,.08);border:1px solid rgba(8,13,16,.12);color:var(--bg);border-radius:20px;padding:8px 12px;font:700 13px Nunito;cursor:pointer;transition:background .15s,transform .15s}
+.cart:hover,.reset-chat:hover{background:rgba(8,13,16,.15);transform:translateY(-1px)}
+.reset-chat{width:36px;height:36px;display:grid;place-items:center;padding:0;font-size:19px}
+#chat{flex:1;overflow-y:auto;padding:22px 18px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+#chat::-webkit-scrollbar{width:7px}
+#chat::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+.msg{max-width:86%;padding:10px 14px;border-radius:16px;white-space:pre-wrap;animation:in .2s}
+@keyframes in{from{opacity:0;transform:translateY(6px)}}
+@media (prefers-reduced-motion:reduce){.msg{animation:none}}
+.bot{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-bottom-left-radius:5px;align-self:flex-start;box-shadow:0 3px 12px var(--shadow)}
+.ai-msg{width:min(94%,500px);padding:15px 17px}
+.ai-msg p{margin:0 0 9px}
+.ai-msg p:last-child{margin-bottom:0}
+.ai-msg strong{color:var(--mint);font-weight:800}
+.ai-list{display:grid;gap:8px;margin:10px 0;padding:0;list-style:none}
+.ai-list li{position:relative;padding:9px 12px 9px 34px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink)}
+.ai-list li:before{content:"✦";position:absolute;left:12px;color:var(--brand2);font-weight:800}
+.ai-table{display:grid;gap:7px;margin:10px 0}
+.ai-table-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 11px;background:var(--bg);border:1px solid var(--line);border-radius:11px;color:var(--ink)}
+.ai-table-row span:last-child{text-align:right;font-weight:800;color:var(--mint);white-space:nowrap}
+.info-card{width:min(96%,520px);padding:16px;border:1px solid var(--line);border-radius:20px;background:var(--panel);box-shadow:0 8px 24px var(--shadow)}
+.info-heading{display:flex;align-items:flex-start;gap:12px;margin-bottom:15px}
+.info-icon{flex:0 0 42px;height:42px;display:grid;place-items:center;border-radius:15px;background:var(--brand);color:var(--mint);font-size:21px}
+.info-heading h2{margin:0 0 3px;color:var(--ink);font:800 19px Fraunces,serif}
+.info-heading p{margin:0;color:var(--muted);font-size:14px}
+.info-groups{display:grid;gap:12px}
+.info-group{padding:12px;border:1px solid var(--line);border-radius:15px;background:var(--bg)}
+.info-group h3{display:flex;align-items:center;gap:7px;margin:0 0 8px;color:var(--mint);font-size:14px;font-weight:800}
+.info-row{display:grid;grid-template-columns:minmax(90px,.7fr) minmax(0,1.3fr);gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.info-row:first-of-type{border-top:0}
+.info-label{color:var(--muted);font-size:13px;font-weight:700}
+.info-value{min-width:0;color:var(--ink);font-size:14px;font-weight:700;overflow-wrap:anywhere}
+.info-value a{color:var(--mint);text-decoration:none}
+.info-value a:hover{text-decoration:underline}
+.info-note{display:block;margin-top:3px;color:var(--muted);font-size:12px;font-weight:400}
+.whatsapp-order{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;margin-top:-3px;padding:10px 16px;border:0;border-radius:22px;background:var(--action);color:var(--ink);text-decoration:none;font:800 14px Nunito;box-shadow:0 4px 12px rgba(57,175,160,.2);transition:transform .15s,filter .15s}
+.whatsapp-order:hover{transform:translateY(-1px);filter:brightness(1.06)}
+.me{background:var(--user);color:var(--bg);border:1px solid color-mix(in srgb,var(--user) 82%,var(--brand));border-bottom-right-radius:5px;align-self:flex-end;box-shadow:0 4px 12px var(--shadow)}
+.opts{display:flex;flex-wrap:wrap;gap:8px;align-self:flex-start;max-width:94%}
+.opt{background:var(--panel);border:1.5px solid var(--brand);color:var(--brand2);border-radius:20px;padding:9px 15px;font:700 14px Nunito;cursor:pointer;transition:transform .15s,background .15s,border-color .15s}
+.opt:hover{transform:translateY(-1px);border-color:var(--brand)}
+.opt:hover,.opt:focus-visible{background:var(--brand);border-color:var(--mint);color:var(--ink);outline:none}
+.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.item:last-child{border:0}
+.item b{display:block;color:var(--mint)}.item span{color:var(--muted);font-size:14px}
+.bar{display:flex;gap:9px;padding:14px;border-top:1px solid var(--line);background:var(--panel)}
+.bar input{flex:1;min-width:0;font:inherit;padding:12px 16px;border-radius:24px;border:1px solid var(--line);background:var(--bg);color:var(--ink);transition:border-color .15s,box-shadow .15s}
+.bar input::placeholder{color:var(--muted);opacity:1}
+.bar input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(72,127,133,.25)}
+.bar button{background:var(--mint);border:0;border-radius:24px;padding:0 20px;font:800 15px Nunito;cursor:pointer;color:var(--bg);transition:transform .15s,filter .15s}
+.bar button:hover{transform:translateY(-1px);filter:brightness(1.05)}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px}
+@media(max-width:480px){.msg{max-width:94%}.ai-msg{width:96%;padding:13px}.info-card{width:96%;padding:12px}.info-row{grid-template-columns:1fr;gap:2px}.bar{padding:11px}.bar button{padding:0 16px}header{padding:13px 12px;gap:8px}.logo{width:40px;height:40px}header h1{font-size:19px}header small{font-size:11px}.header-actions{gap:5px}.cart{padding:7px 9px;font-size:12px}.reset-chat{width:34px;height:34px}}
+@media(max-width:360px){header small{display:none}.cart{font-size:11px;padding:7px 8px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">G</div>
+    <div><h1>Guala</h1><small>Asistente del restaurante</small></div>
+    <div class="header-actions">
+      <button class="cart" id="infoBtn">Datos del local</button>
+      <button class="reset-chat" id="resetBtn" type="button" aria-label="Reiniciar chat" title="Reiniciar chat">↻</button>
+    </div>
+  </header>
+  <div id="chat" aria-live="polite"></div>
+  <div class="bar">
+    <input id="txt" placeholder="Escribí tu consulta…" autocomplete="off">
+    <button id="send">Enviar</button>
+  </div>
+</div>
+
+<script>
+/* ====== CONFIGURACIÓN: pegá tus datos de Supabase (Settings → API) ====== */
+const SUPABASE_URL = "https://tvdxfezmqjzevbtdnpif.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_zZSIDKZ3mTYdA2rApWyyAg_XWQrP9nm";
+const AI_FUNCTION = "guala-chat"; // Edge Function opcional para respuestas con IA
+/* ======================================================================== */
+
+const configured = !SUPABASE_URL.includes("TU-PROYECTO") && !SUPABASE_ANON_KEY.includes("TU_ANON_KEY");
+const db = configured ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const $ = s => document.querySelector(s);
+const chat = $("#chat");
+let menu = [];
+let businessInfo = [];
+let conversationHistory = [];
+let chatGeneration = 0;
+const money = n => "$" + Number(n).toLocaleString("es-AR");
+const scroll = () => chat.scrollTo({top:chat.scrollHeight,behavior:"smooth"});
+
+function bot(text){
+  const d=document.createElement("div"); d.className="msg bot"; d.textContent=text; chat.append(d); scroll(); return d;
+}
+function appendInline(parent,text){
+  text.split(/(\*\*[^*]+\*\*)/g).forEach(part=>{
+    if(part.startsWith("**")&&part.endsWith("**")){
+      const strong=document.createElement("strong");
+      strong.textContent=part.slice(2,-2);
+      parent.append(strong);
+    }else{
+      parent.append(document.createTextNode(part.replace(/`([^`]+)`/g,"$1")));
+    }
+  });
+}
+function botReply(text,whatsappUrl){
+  const d=document.createElement("div");
+  d.className="msg bot ai-msg";
+  const lines=text.split(/\r?\n/);
+  for(let i=0;i<lines.length;){
+    const line=lines[i].trim();
+    if(!line){i++;continue}
+    if(line.startsWith("|")){
+      const rows=[];
+      while(i<lines.length&&lines[i].trim().startsWith("|")){
+        const cells=lines[i].trim().replace(/^\||\|$/g,"").split("|").map(cell=>cell.trim());
+        if(!cells.every(cell=>/^:?-{3,}:?$/.test(cell))) rows.push(cells);
+        i++;
+      }
+      const hasHeader=rows.length>1&&/^(plato|nombre|opci[oó]n|producto|item)$/i.test(rows[0][0]);
+      const table=document.createElement("div");
+      table.className="ai-table";
+      (hasHeader?rows.slice(1):rows).forEach(cells=>{
+        const row=document.createElement("div");
+        row.className="ai-table-row";
+        const name=document.createElement("span");
+        appendInline(name,cells[0]||"");
+        row.append(name);
+        if(cells[1]){
+          const value=document.createElement("span");
+          appendInline(value,cells.slice(1).join(" · "));
+          row.append(value);
+        }
+        table.append(row);
+      });
+      d.append(table);
+      continue;
+    }
+    if(/^[-*•]\s+/.test(line)){
+      const list=document.createElement("ul");
+      list.className="ai-list";
+      while(i<lines.length&&/^[-*•]\s+/.test(lines[i].trim())){
+        const item=document.createElement("li");
+        appendInline(item,lines[i].trim().replace(/^[-*•]\s+/,""));
+        list.append(item);
+        i++;
+      }
+      d.append(list);
+      continue;
+    }
+    const paragraph=document.createElement("p");
+    appendInline(paragraph,line.replace(/^#{1,6}\s+/,""));
+    d.append(paragraph);
+    i++;
+  }
+  chat.append(d);
+  if(whatsappUrl){
+    const link=document.createElement("a");
+    link.className="whatsapp-order";
+    link.href=whatsappUrl;
+    link.target="_blank";
+    link.rel="noopener noreferrer";
+    link.textContent="🟢 Continuar pedido por WhatsApp";
+    link.setAttribute("aria-label","Continuar pedido por WhatsApp en una nueva pestaña");
+    chat.append(link);
+  }
+  scroll();
+  return d;
+}
+function me(text){
+  const d=document.createElement("div"); d.className="msg me"; d.textContent=text; chat.append(d); scroll();
+}
+function options(list){
+  const w=document.createElement("div"); w.className="opts";
+  list.forEach(([label,fn])=>{
+    const b=document.createElement("button"); b.className="opt"; b.textContent=label;
+    b.onclick=()=>{ w.remove(); me(label); fn(); };
+    w.append(b);
+  });
+  chat.append(w); scroll();
+}
+function mainMenu(){
+  options([
+    ["🍽️ Ver la carta",showCategories],
+    ["📍 Horarios y ubicación",info],
+    ["💬 Hacer una consulta",()=>bot("¡Dale! 😊 Escribime qué te gustaría saber y te ayudo.")]
+  ]);
+}
+
+async function loadMenu(){
+  if(menu.length) return true;
+  if(!db){
+    bot("Supabase no está configurado. No puedo cargar la carta.");
+    return false;
+  }
+  const {data,error}=await db.from("menu_items").select("*").eq("is_available",true).order("menu").order("section").order("sort_order").order("name");
+  if(error){
+    console.error("No se pudo leer menu_items:",error);
+    bot("No pude leer la carta desde Supabase: "+error.message);
+    return false;
+  }
+  menu=(data||[]).map(item=>({...item,category:[item.menu,item.section].filter(Boolean).join(" · ")}));
+  if(!menu.length) bot("La carta no tiene platos disponibles en este momento.");
+  return menu.length>0;
+}
+
+async function loadBusinessInfo(){
+  if(businessInfo.length) return true;
+  if(!db){
+    bot("Supabase no está configurado. No puedo consultar los datos del local.");
+    return false;
+  }
+  const {data,error}=await db.from("business_info").select("category,key,value,notes").eq("is_public",true).order("category").order("key");
+  if(error){
+    console.error("No se pudo leer business_info:",error);
+    bot("No pude leer los datos del local desde Supabase: "+error.message);
+    return false;
+  }
+  businessInfo=data||[];
+  return businessInfo.length>0;
+}
+
+async function showCategories(){
+  if(!await loadMenu()) return;
+  bot("¡Qué bueno que quieras conocer nuestra carta! 😋 ¿Qué te gustaría ver?");
+  const cats=[...new Set(menu.map(m=>m.category))];
+  options([...cats.map(c=>[c,()=>showCategory(c)]),["Volver al inicio",mainMenu]]);
+}
+function showCategory(cat){
+  const box=document.createElement("div"); box.className="msg bot"; box.style.width="86%";
+  menu.filter(m=>m.category===cat).forEach(it=>{
+    const r=document.createElement("div"); r.className="item";
+    r.innerHTML=`<div><b></b><span></span></div><div style="text-align:right"><b></b></div>`;
+    const [a,b]=r.querySelectorAll("div");
+    a.querySelector("b").textContent=it.name;
+    a.querySelector("span").textContent=[it.description,it.notes,it.availability].filter(Boolean).join(" · ");
+    const prices=[];
+    if(it.price!==null) prices.push(`${money(it.price)}${it.price_label?` (${it.price_label})`:""}`);
+    if(it.price_2!==null) prices.push(`${money(it.price_2)}${it.price_2_label?` (${it.price_2_label})`:""}`);
+    b.querySelector("b").textContent=prices.join(" / ")||it.price_note||"Consultar precio";
+    r.append(b); box.append(r);
+  });
+  chat.append(box); scroll();
+  options([["Ver otra categoría",showCategories],["Volver al inicio",mainMenu]]);
+}
+async function info(){
+  if(!await loadBusinessInfo()){
+    bot("No hay información pública del local disponible en la base de datos.");
+    return;
+  }
+  const card=document.createElement("section");
+  card.className="msg bot info-card";
+  card.setAttribute("aria-label","Información del local");
+
+  const heading=document.createElement("div");
+  heading.className="info-heading";
+  const icon=document.createElement("span");
+  icon.className="info-icon";
+  icon.setAttribute("aria-hidden","true");
+  icon.textContent="📍";
+  const title=document.createElement("div");
+  const titleText=document.createElement("h2");
+  titleText.textContent="¡Conocé Gualà!";
+  const subtitle=document.createElement("p");
+  subtitle.textContent="Te comparto la información del local 😊";
+  title.append(titleText,subtitle);
+  heading.append(icon,title);
+  card.append(heading);
+
+  const labelFor=item=>{
+    const labels={
+      whatsapp_dueno:"WhatsApp",
+      whatsapp:"WhatsApp",
+      instagram:"Instagram",
+      direccion:"Dirección",
+      address:"Dirección",
+      telefono:"Teléfono",
+      telefono_dueno:"Teléfono"
+    };
+    const key=String(item.key||"").toLowerCase().replace(/[áà]/g,"a").replace(/[éè]/g,"e").replace(/[íì]/g,"i").replace(/[óò]/g,"o").replace(/[úù]/g,"u");
+    const label=labels[key]||String(item.key||"Información").replace(/[_-]+/g," ").replace(/\b\w/g,char=>char.toUpperCase());
+    return label.replace(/^Telefono\b/,"Teléfono").replace(/^Menu\b/,"Menú");
+  };
+  const categoryIcon=category=>{
+    const value=String(category||"").toLowerCase();
+    if(/horario|hora/.test(value)) return "🕒";
+    if(/contact|red|social/.test(value)) return "💬";
+    if(/ubic|direc|local/.test(value)) return "📍";
+    if(/servic/.test(value)) return "🍽️";
+    if(/historia|general/.test(value)) return "💚";
+    return "✨";
+  };
+  const categoryTitle=category=>{
+    const value=String(category||"informacion").toLowerCase();
+    const titles={contacto:"Contacto",general:"Sobre Gualà",historia:"Nuestra historia",horarios:"Horarios",servicio:"Servicios"};
+    return titles[value]||value.replace(/[_-]+/g," ").replace(/\b\w/g,char=>char.toUpperCase());
+  };
+  const groups=new Map();
+  businessInfo.forEach(item=>{
+    const category=String(item.category||"Información");
+    if(!groups.has(category)) groups.set(category,[]);
+    groups.get(category).push(item);
+  });
+  const groupList=document.createElement("div");
+  groupList.className="info-groups";
+  groups.forEach((items,category)=>{
+    const group=document.createElement("section");
+    group.className="info-group";
+    const groupTitle=document.createElement("h3");
+    groupTitle.textContent=`${categoryIcon(category)} ${categoryTitle(category)}`;
+    group.append(groupTitle);
+    items.forEach(item=>{
+      const row=document.createElement("div");
+      row.className="info-row";
+      const label=document.createElement("span");
+      label.className="info-label";
+      label.textContent=labelFor(item);
+      const value=document.createElement("div");
+      value.className="info-value";
+      const rawValue=String(item.value||"");
+      const key=String(item.key||"").toLowerCase();
+      const addLink=(href,text)=>{
+        const link=document.createElement("a");
+        link.href=href;
+        link.target="_blank";
+        link.rel="noopener noreferrer";
+        link.textContent=text;
+        value.append(link);
+      };
+      if(/instagram/.test(key)){
+        const profile=rawValue.match(/https?:\/\/(?:www\.)?instagram\.com\/([a-zA-Z0-9._]+)/i);
+        const handle=(profile?.[1]||rawValue.match(/@([a-zA-Z0-9._]+)/)?.[1]||rawValue).replace(/^@/,"");
+        const href=profile?profile[0]:`https://www.instagram.com/${encodeURIComponent(handle)}/`;
+        addLink(href,`@${handle}`);
+      }else if(/facebook/.test(key)||/https?:\/\//i.test(rawValue)){
+        const url=rawValue.match(/https?:\/\/[^\s]+/i)?.[0];
+        if(url) addLink(url.replace(/[),.]+$/,""),labelFor(item));
+        else value.textContent=rawValue;
+      }else if(/whatsapp/.test(key)){
+        const digits=rawValue.replace(/\D/g,"");
+        const phone=digits.length===10?`549${digits}`:digits;
+        if(phone) addLink(`https://wa.me/${phone}`,rawValue);
+        else value.textContent=rawValue;
+      }else if(/telefono/.test(key)){
+        const digits=rawValue.replace(/\D/g,"");
+        if(digits) addLink(`tel:${digits}`,rawValue);
+        else value.textContent=rawValue;
+      }else value.textContent=rawValue;
+      if(item.notes){
+        const note=document.createElement("small");
+        note.className="info-note";
+        note.textContent=item.notes;
+        value.append(note);
+      }
+      row.append(label,value);
+      group.append(row);
+    });
+    groupList.append(group);
+  });
+  card.append(groupList);
+  chat.append(card);
+  scroll();
+  options([["Ver la carta",showCategories],["Volver al inicio",mainMenu]]);
+}
+
+function formatMenuItem(item){
+  const prices=[];
+  if(item.price!==null) prices.push(`${money(item.price)}${item.price_label?` (${item.price_label})`:""}`);
+  if(item.price_2!==null) prices.push(`${money(item.price_2)}${item.price_2_label?` (${item.price_2_label})`:""}`);
+  const details=[item.description,item.notes,item.availability].filter(Boolean).join(" · ");
+  return `• ${item.name}${prices.length?` — ${prices.join(" / ")}`:item.price_note?` — ${item.price_note}`:" — consultar precio"}${details?`\n  ${details}`:""}`;
+}
+
+function databaseReply(message,matchedMenu,publicInfo,aiUnavailableMessage){
+  const q=message.toLowerCase();
+  const contactQuery=/pedido|reserv|delivery|contact|whatsapp|instagram|tel[eé]fono/.test(q);
+  const infoQuery=/hora|abre|cierra|direcci|ubica|contact|whatsapp|instagram|tel[eé]fono|pedido|reserv|delivery/.test(q);
+  const infoRows=(publicInfo||[]).filter(item=>{
+    if(!infoQuery) return false;
+    const searchable=`${item.category} ${item.key} ${item.value}`.toLowerCase();
+    return q.split(/\s+/).some(word=>word.length>=3&&searchable.includes(word));
+  });
+  const parts=[];
+  if(aiUnavailableMessage) parts.push(aiUnavailableMessage);
+  if(matchedMenu?.length){
+    parts.push(`Encontré estas opciones en la carta:\n${matchedMenu.slice(0,5).map(formatMenuItem).join("\n")}`);
+  }else if(!infoRows.length){
+    parts.push("No encontré coincidencias en la carta para esa consulta. Probá con el nombre de un plato o un ingrediente.");
+  }
+  if(infoRows.length){
+    parts.push(infoRows.map(item=>`${item.key}: ${item.value}${item.notes?` (${item.notes})`:""}`).join("\n"));
+  }
+  if(contactQuery&&!infoRows.length){
+    const contacts=(publicInfo||[]).filter(item=>/contacto|whatsapp|instagram/.test(`${item.category} ${item.key}`));
+    if(contacts.length) parts.push(contacts.map(item=>`${item.key}: ${item.value}${item.notes?` (${item.notes})`:""}`).join("\n"));
+  }
+  return parts.join("\n\n");
+}
+
+function getWhatsAppDigits(publicInfo){
+  const record=publicInfo?.find(item=>item.key==="whatsapp_dueno"||item.key==="whatsapp");
+  if(!record||typeof record.value!=="string") return "";
+  const digits=record.value.replace(/\D/g,"");
+  if(digits.length===10) return `549${digits}`;
+  if(digits.startsWith("54")&&digits.length>=12) return digits.startsWith("549")?digits:`549${digits.slice(2)}`;
+  return digits;
+}
+
+function makeWhatsAppUrl(message,reply,publicInfo){
+  const phone=getWhatsAppDigits(publicInfo);
+  const recentQuestions=conversationHistory.filter(turn=>turn.role==="user").map(turn=>turn.content);
+  const context=[...recentQuestions,message].join(" ");
+  const intent=/\b(cu[aá]nt[oa]s?|precio|vale|valdr[ií]a|salen|sale|cuesta|total|cotizaci[oó]n|pedido|pedir|comprar|encargar|reservar|cambiala|cambiarlo|reemplaz[aá])\b/i;
+  const hasQuotedPrice=/(?:\$\s?[\d., ]*\d|\d[\d., ]*\s?(?:ars|ar\$|pesos))/i.test(reply);
+  const asksForChoice=/¿[^?]*(?:cu.l|qu. tipo|me confirm.s|qu. prefer.s)[^?]*\?/i.test(reply);
+  if(!phone||!intent.test(context)||!hasQuotedPrice||asksForChoice) return "";
+  const cleanReply=reply
+    .replace(/\s*(?:Para hacer|Si quer[eé]s hacer|Si deseas hacer)[^.!?]*(?:[.!?]|$).*/is,"")
+    .replace(/\*\*/g,"")
+    .replace(/^\s*[-*•]\s*/gm,"• ")
+    .trim();
+  const text=`¡Hola! Quiero hacer este pedido:\n${cleanReply}`;
+  return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+}
+
+async function freeText(text){
+  const generation=chatGeneration;
+  me(text);
+  if(!db){
+    bot("Supabase no está configurado, así que no puedo consultar la carta ni los datos del local.");
+    return mainMenu();
+  }
+  const pending=bot("Estoy buscando una respuesta…");
+  try{
+    const recentQuestions=conversationHistory.filter(turn=>turn.role==="user").slice(-2).map(turn=>turn.content);
+    const searchQuery=[...recentQuestions,text].join(" ").slice(-500);
+    const {data:matchedMenu,error:menuError}=await db.rpc("search_menu",{q:searchQuery,max_results:12});
+    if(menuError) throw menuError;
+    const {data:publicInfo,error:infoError}=await db.from("business_info").select("category,key,value,notes").eq("is_public",true);
+    if(infoError) throw infoError;
+    let reply="";
+    try{
+      const {data,error}=await db.functions.invoke(AI_FUNCTION,{
+        body:{
+          message:text,
+          history:conversationHistory.slice(-8),
+          menu:(matchedMenu||[]).map(item=>({...item,category:[item.menu,item.section].filter(Boolean).join(" · ")})),
+          businessInfo:publicInfo||[]
+        }
+      });
+      if(error) throw error;
+      if(!data || typeof data.reply!=="string" || !data.reply.trim()) throw new Error("La función de IA devolvió una respuesta vacía.");
+      reply=data.reply.trim();
+    }catch(error){
+      console.warn("No se pudo consultar Groq; se responderá con datos de Supabase:",error);
+      const status=error?.context?.status;
+      const aiUnavailableMessage=status===404
+        ?"La función de IA todavía no está publicada. Te respondo con la información disponible en la base."
+        :status===503
+          ?"La IA está publicada, pero falta configurar GROQ_API_KEY en Supabase. Te respondo con la información disponible en la base."
+          :"No pude conectar con la IA. Te respondo con la información disponible en la base.";
+      reply=databaseReply(text,matchedMenu,publicInfo,aiUnavailableMessage);
+    }
+    if(generation!==chatGeneration) return;
+    pending.remove();
+    botReply(reply,makeWhatsAppUrl(text,reply,publicInfo));
+    conversationHistory.push({role:"user",content:text},{role:"assistant",content:reply});
+    conversationHistory=conversationHistory.slice(-8);
+    return;
+  }catch(error){
+    console.error("No se pudieron consultar los datos para responder:",error);
+    if(generation!==chatGeneration) return;
+    pending.remove();
+    bot("No pude consultar Supabase para responder. Revisá tu conexión e intentá de nuevo.");
+    return;
+  }
+}
+
+$("#send").onclick=()=>{ const v=$("#txt").value.trim(); if(v){ $("#txt").value=""; freeText(v);} };
+$("#txt").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#send").click(); });
+$("#infoBtn").onclick=info;
+$("#resetBtn").onclick=()=>{
+  chatGeneration++;
+  conversationHistory=[];
+  $("#txt").value="";
+  chat.replaceChildren();
+  bot("¡Hola! 👋 Soy el asistente de Gualà. Estoy acá para ayudarte con la carta, los horarios y cualquier consulta 😊");
+  mainMenu();
+  $("#txt").focus();
+};
+
+bot("¡Hola! 👋 Soy el asistente de Gualà. Estoy acá para ayudarte con la carta, los horarios y cualquier consulta 😊");
+mainMenu();
+</script>
+</body>
+</html>

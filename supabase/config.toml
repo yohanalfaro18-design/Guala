@@ -1,0 +1,4 @@
+project_id = "guala-chat"
+
+[functions.guala-chat]
+verify_jwt = false
