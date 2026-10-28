@@ -428,6 +428,11 @@ function getWhatsAppDigits(publicInfo){
   return digits;
 }
 
+function getQuotedOrderTotal(reply){
+  const match=reply.match(/^\s*\*{0,2}total\*{0,2}\s*:\s*(\$\s?[\d., ]*\d|\d[\d., ]*\s?(?:ars|ar\$|pesos))\s*\*{0,2}\s*$/im);
+  return match?.[1].trim()||"";
+}
+
 function makeWhatsAppUrl(message,reply,publicInfo){
   const phone=getWhatsAppDigits(publicInfo);
   const recentQuestions=conversationHistory.filter(turn=>turn.role==="user").map(turn=>turn.content);
@@ -440,13 +445,8 @@ function makeWhatsAppUrl(message,reply,publicInfo){
   const hasQuotedPrice=/(?:\$\s?[\d., ]*\d|\d[\d., ]*\s?(?:ars|ar\$|pesos))/i.test(reply);
   const asksForChoice=/¿[^?]*(?:cu.l|qu. tipo|me confirm.s|qu. prefer.s)[^?]*\?/i.test(reply);
   if(!phone||(!intent.test(context)&&!isDirectOrder)||(!hasQuotedPrice&&!isDirectOrder)||(asksForChoice&&!isDirectOrder)) return "";
-  const cleanReply=reply
-    .replace(/\s*(?:Para hacer|Si quer[eé]s hacer|Si deseas hacer)[^.!?]*(?:[.!?]|$).*/is,"")
-    .replace(/\s*[,;]?\s*¿?\s*(?:y\s+)?te\s+gustar[ií]a\s+agregar\s+algo\s+m[aá]s\s*\??/gi,"")
-    .replace(/\*\*/g,"")
-    .replace(/^\s*[-*•]\s*/gm,"• ")
-    .trim();
-  const text=`¡Hola! Quiero hacer este pedido:\n${message.trim()}${cleanReply?`\n\n${cleanReply}`:""}`;
+  const total=getQuotedOrderTotal(reply);
+  const text=`¡Hola! Quiero hacer este pedido:\n${message.trim()}${total?`\nTotal: ${total}`:""}`;
   return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 }
 
