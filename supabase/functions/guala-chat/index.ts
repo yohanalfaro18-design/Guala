@@ -108,7 +108,7 @@ edgeRuntime.Deno.serve(async (request: Request) => {
         messages: [
           {
             role: "system",
-            content: "Cuando puedas calcular el total de un pedido con certeza, incluilo en una línea aparte con el formato exacto «Total: $X». Si necesitás aclarar algo o no tenés todos los precios, no inventes ni incluyas un total.",
+            content: "Cuando puedas calcular un pedido con certeza, detallá los productos y sus precios unitarios y subtotales en una línea aparte con el formato «Precios: producto, cantidad × precio unitario = subtotal». Incluí el total en otra línea con el formato exacto «Total: $X». Si necesitás aclarar algo o no tenés todos los precios, no inventes precios ni total.",
           },
           {
             role: "system",

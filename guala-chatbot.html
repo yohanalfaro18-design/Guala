@@ -429,7 +429,12 @@ function getWhatsAppDigits(publicInfo){
 }
 
 function getQuotedOrderTotal(reply){
-  const match=reply.match(/^\s*\*{0,2}total\*{0,2}\s*:\s*(\$\s?[\d., ]*\d|\d[\d., ]*\s?(?:ars|ar\$|pesos))\s*\*{0,2}\s*$/im);
+  const match=reply.match(/^\s*(?:\*\*)?total(?:\*\*)?\s*:\s*(\$\s?[\d., ]*\d|\d[\d., ]*\s?(?:ars|ar\$|pesos))\s*(?:\*\*)?\s*$/im);
+  return match?.[1].trim()||"";
+}
+
+function getQuotedOrderPrices(reply){
+  const match=reply.match(/^\s*(?:\*\*)?precios(?:\*\*)?\s*:\s*(.*?)\s*(?:\*\*)?\s*$/im);
   return match?.[1].trim()||"";
 }
 
@@ -446,7 +451,8 @@ function makeWhatsAppUrl(message,reply,publicInfo){
   const asksForChoice=/¿[^?]*(?:cu.l|qu. tipo|me confirm.s|qu. prefer.s)[^?]*\?/i.test(reply);
   if(!phone||(!intent.test(context)&&!isDirectOrder)||(!hasQuotedPrice&&!isDirectOrder)||(asksForChoice&&!isDirectOrder)) return "";
   const total=getQuotedOrderTotal(reply);
-  const text=`¡Hola! Quiero hacer este pedido:\n${message.trim()}${total?`\nTotal: ${total}`:""}`;
+  const prices=total?getQuotedOrderPrices(reply):"";
+  const text=`¡Hola! Quiero hacer este pedido:\n${message.trim()}${prices?`\nPrecios: ${prices}`:""}${total?`\nTotal: ${total}`:""}`;
   return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 }
 
