@@ -433,10 +433,12 @@ function makeWhatsAppUrl(message,reply,publicInfo){
   const recentQuestions=conversationHistory.filter(turn=>turn.role==="user").map(turn=>turn.content);
   const context=[...recentQuestions,message].join(" ");
   const intent=/\b(cu[aá]nt[oa]s?|precio|vale|valdr[ií]a|salen|sale|cuesta|total|cotizaci[oó]n|pedido|pedir|comprar|encargar|reservar|cambiala|cambiarlo|reemplaz[aá])\b/i;
-  const directOrderIntent=/\b(?:(?:quiero|quisiera|quer[ií]a)\s+(?!saber\b|consultar\b|preguntar\b|conocer\b|ver\b|que\b|informaci[oó]n\b|info\b)[a-záéíóúüñ0-9]+|dame|me das|voy a pedir|me gustar[ií]a pedir)\b/i;
+  const normalizedContext=message.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const directOrderIntent=/\b(?:quiero|quisiera|me\s+gustaria|me\s+gustaria\s+pedir|necesito|necesitaria|dame|me\s+das|me\s+traes|me\s+traiga|voy\s+a\s+pedir|quiero\s+pedir|quisiera\s+pedir|pedir)\b/i;
+  const directOrderExclusions=/\b(?:saber|consultar|preguntar|conocer|ver|informacion|info|horario|direccion|ubicacion|abren?|cerran?|horas?)\b/i;
+  const isDirectOrder=directOrderIntent.test(normalizedContext) && !directOrderExclusions.test(normalizedContext);
   const hasQuotedPrice=/(?:\$\s?[\d., ]*\d|\d[\d., ]*\s?(?:ars|ar\$|pesos))/i.test(reply);
   const asksForChoice=/¿[^?]*(?:cu.l|qu. tipo|me confirm.s|qu. prefer.s)[^?]*\?/i.test(reply);
-  const isDirectOrder=directOrderIntent.test(context);
   if(!phone||(!intent.test(context)&&!isDirectOrder)||(!hasQuotedPrice&&!isDirectOrder)||(asksForChoice&&!isDirectOrder)) return "";
   const cleanReply=reply
     .replace(/\s*(?:Para hacer|Si quer[eé]s hacer|Si deseas hacer)[^.!?]*(?:[.!?]|$).*/is,"")
