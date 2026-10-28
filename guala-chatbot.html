@@ -442,6 +442,7 @@ function makeWhatsAppUrl(message,reply,publicInfo){
   if(!phone||(!intent.test(context)&&!isDirectOrder)||(!hasQuotedPrice&&!isDirectOrder)||(asksForChoice&&!isDirectOrder)) return "";
   const cleanReply=reply
     .replace(/\s*(?:Para hacer|Si quer[eé]s hacer|Si deseas hacer)[^.!?]*(?:[.!?]|$).*/is,"")
+    .replace(/\s*[,;]?\s*¿?\s*(?:y\s+)?te\s+gustar[ií]a\s+agregar\s+algo\s+m[aá]s\s*\??/gi,"")
     .replace(/\*\*/g,"")
     .replace(/^\s*[-*•]\s*/gm,"• ")
     .trim();
