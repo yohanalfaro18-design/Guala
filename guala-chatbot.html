@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Guala · Asistente</title>
+<link rel="icon" type="image/jpeg" href="guala-logo.jpeg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -14,7 +15,7 @@ html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.45 Nunito,system-ui,sans-serif;display:flex;justify-content:center}
 .app{width:100%;max-width:600px;height:100%;display:flex;flex-direction:column;background:var(--bg);border-inline:1px solid var(--line);box-shadow:0 12px 50px var(--shadow)}
 header{padding:16px 20px;display:flex;align-items:center;gap:12px;background:var(--mint);color:var(--bg);box-shadow:0 4px 18px var(--shadow);z-index:1}
-.logo{width:44px;height:44px;border-radius:16px;background:var(--brand);color:var(--mint);display:grid;place-items:center;font:800 22px Fraunces,serif;box-shadow:0 3px 10px var(--shadow)}
+.logo{width:108px;height:44px;flex:0 0 108px;border-radius:12px;object-fit:cover;object-position:center;background:var(--mint);box-shadow:0 3px 10px var(--shadow)}
 header>div:nth-child(2){min-width:0}
 header h1{margin:0;font:800 22px Fraunces,serif;letter-spacing:.5px}
 header small{opacity:.85}
@@ -71,14 +72,14 @@ header small{opacity:.85}
 .bar button{background:var(--mint);border:0;border-radius:24px;padding:0 20px;font:800 15px Nunito;cursor:pointer;color:var(--bg);transition:transform .15s,filter .15s}
 .bar button:hover{transform:translateY(-1px);filter:brightness(1.05)}
 :focus-visible{outline:2px solid var(--brand2);outline-offset:2px}
-@media(max-width:480px){.msg{max-width:94%}.ai-msg{width:96%;padding:13px}.info-card{width:96%;padding:12px}.info-row{grid-template-columns:1fr;gap:2px}.bar{padding:11px}.bar button{padding:0 16px}header{padding:13px 12px;gap:8px}.logo{width:40px;height:40px}header h1{font-size:19px}header small{font-size:11px}.header-actions{gap:5px}.cart{padding:7px 9px;font-size:12px}.reset-chat{width:34px;height:34px}}
+@media(max-width:480px){.msg{max-width:94%}.ai-msg{width:96%;padding:13px}.info-card{width:96%;padding:12px}.info-row{grid-template-columns:1fr;gap:2px}.bar{padding:11px}.bar button{padding:0 16px}header{padding:13px 12px;gap:8px}.logo{width:88px;height:38px;flex-basis:88px}header h1{font-size:19px}header small{font-size:11px}.header-actions{gap:5px}.cart{padding:7px 9px;font-size:12px}.reset-chat{width:34px;height:34px}}
 @media(max-width:360px){header small{display:none}.cart{font-size:11px;padding:7px 8px}}
 </style>
 </head>
 <body>
 <div class="app">
   <header>
-    <div class="logo">G</div>
+    <img class="logo" src="guala-logo.jpeg" alt="Gualà">
     <div><h1>Guala</h1><small>Asistente del restaurante</small></div>
     <div class="header-actions">
       <button class="cart" id="infoBtn">Datos del local</button>
