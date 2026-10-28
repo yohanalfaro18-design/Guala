@@ -433,15 +433,17 @@ function makeWhatsAppUrl(message,reply,publicInfo){
   const recentQuestions=conversationHistory.filter(turn=>turn.role==="user").map(turn=>turn.content);
   const context=[...recentQuestions,message].join(" ");
   const intent=/\b(cu[aá]nt[oa]s?|precio|vale|valdr[ií]a|salen|sale|cuesta|total|cotizaci[oó]n|pedido|pedir|comprar|encargar|reservar|cambiala|cambiarlo|reemplaz[aá])\b/i;
+  const directOrderIntent=/\b(?:(?:quiero|quisiera|quer[ií]a)\s+(?!saber\b|consultar\b|preguntar\b|conocer\b|ver\b|que\b|informaci[oó]n\b|info\b)[a-záéíóúüñ0-9]+|dame|me das|voy a pedir|me gustar[ií]a pedir)\b/i;
   const hasQuotedPrice=/(?:\$\s?[\d., ]*\d|\d[\d., ]*\s?(?:ars|ar\$|pesos))/i.test(reply);
   const asksForChoice=/¿[^?]*(?:cu.l|qu. tipo|me confirm.s|qu. prefer.s)[^?]*\?/i.test(reply);
-  if(!phone||!intent.test(context)||!hasQuotedPrice||asksForChoice) return "";
+  const isDirectOrder=directOrderIntent.test(context);
+  if(!phone||(!intent.test(context)&&!isDirectOrder)||(!hasQuotedPrice&&!isDirectOrder)||(asksForChoice&&!isDirectOrder)) return "";
   const cleanReply=reply
     .replace(/\s*(?:Para hacer|Si quer[eé]s hacer|Si deseas hacer)[^.!?]*(?:[.!?]|$).*/is,"")
     .replace(/\*\*/g,"")
     .replace(/^\s*[-*•]\s*/gm,"• ")
     .trim();
-  const text=`¡Hola! Quiero hacer este pedido:\n${cleanReply}`;
+  const text=`¡Hola! Quiero hacer este pedido:\n${message.trim()}${cleanReply?`\n\n${cleanReply}`:""}`;
   return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 }
 
